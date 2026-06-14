@@ -9,22 +9,31 @@ let data = {
     status: "offline"
 };
 
-app.get('/', (req, res) => {
-    res.send('API ONLINE ✔');
+// 👇 IMPORTANTE: aceptar GET también (MTA friendly)
+app.get('/update', (req, res) => {
+
+    if (req.query.players) {
+        data = {
+            players: Number(req.query.players),
+            maxPlayers: Number(req.query.maxPlayers),
+            status: req.query.status || "online"
+        };
+    }
+
+    res.json({ ok: true });
 });
 
+// status para Discord
 app.get('/status', (req, res) => {
     res.json(data);
 });
 
-app.post('/update', (req, res) => {
-    data = req.body;
-    res.json({ ok: true });
+// test
+app.get('/', (req, res) => {
+    res.send('API ONLINE');
 });
 
-// 🔥 IMPORTANTE PARA RENDER
-const PORT = process.env.PORT || 10000;
-
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log("API ONLINE EN PUERTO", PORT);
+    console.log("API ONLINE");
 });
