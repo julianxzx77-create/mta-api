@@ -3,7 +3,7 @@ const app = express();
 
 app.use(express.json());
 
-// 🔥 DATA GLOBAL
+// 🔥 memoria rápida (evita lag)
 let data = {
     players: []
 };
@@ -13,50 +13,44 @@ app.get('/', (req, res) => {
     res.send('API MTA ONLINE ✔');
 });
 
-// 📡 UPDATE DESDE MTA
+// 📡 UPDATE desde MTA
 app.get('/update', (req, res) => {
 
     if (req.query.data) {
         try {
             data = JSON.parse(req.query.data);
         } catch (e) {
-            console.log("Error JSON");
+            console.log("JSON ERROR");
         }
     }
 
     res.json({ ok: true });
 });
 
-// 📊 STATUS
+// 📊 STATUS rápido
 app.get('/status', (req, res) => {
-
-    let totalPlayers = data.players.length || 0;
-
     res.json({
-        players: totalPlayers,
+        players: data.players?.length || 0,
         status: "online"
     });
 });
 
-// 🏆 TOP 10 MILLONARIOS
+// 🏆 TOP 10 rápido
 app.get('/top10', (req, res) => {
 
-    let list = (data.players || []).map(p => {
+    if (!data.players) return res.json([]);
 
-        let cash = Number(p.money || 0);
-        let bank = Number(p.bank || 0);
-
-        return {
+    let top = data.players
+        .map(p => ({
             name: p.name,
-            cash,
-            bank,
-            total: cash + bank
-        };
-    });
+            money: Number(p.money || 0),
+            bank: Number(p.bank || 0),
+            total: Number(p.money || 0) + Number(p.bank || 0)
+        }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 10);
 
-    list.sort((a, b) => b.total - a.total);
-
-    res.json(list.slice(0, 10));
+    res.json(top);
 });
 
 // 🚀 PORT RENDER
